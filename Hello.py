@@ -1,30 +1,33 @@
 import streamlit as st
-from openai import Client
 
-with st.sidebar:
-    openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
-    st.markdown("[Get an OpenAI API key](https://platform.openai.com/account/api-keys)")
-    st.markdown("[View the source code](https://github.com/streamlit/llm-examples/blob/main/Chatbot.py)")
-    st.markdown("[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/streamlit/llm-examples?quickstart=1)")
+def chatbot_response(input_text):
+    # Define some simple rules or patterns for generating responses
+    if "hello" in input_text.lower():
+        return "Hi there! How can I help you?"
+    elif "how are you" in input_text.lower():
+        return "I'm doing well, thank you for asking!"
+    elif "bye" in input_text.lower():
+        return "Goodbye! Have a great day!"
+    else:
+        return "I'm sorry, I don't understand. Can you please rephrase your question?"
 
-st.title("💬 Chatbot")
+def main():
+    st.title("💬 Simple Chatbot")
 
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = []
 
-for msg in st.session_state.messages:
-    st.write(msg["role"], msg["content"])
+    for msg in st.session_state.messages:
+        st.write(msg["role"], msg["content"])
 
-if prompt := st.text_input("You", key="user_input"):
-    if not openai_api_key:
-        st.info("Please add your OpenAI API key to continue.")
-        st.stop()
+    input_text = st.text_input("You", key="user_input")
 
-    client = Client(api_key=openai_api_key)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    st.write("user", prompt)
-    response = client.complete(prompt, engine="text-davinci", stop="\n", temperature=0.5, max_tokens=100)
-    msg = response.choices[0].text.strip()
-    st.session_state.messages.append({"role": "assistant", "content": msg})
-    st.write("assistant", msg)
+    if input_text:
+        response = chatbot_response(input_text)
+        st.session_state.messages.append({"role": "user", "content": input_text})
+        st.write("user", input_text)
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.write("assistant", response)
 
+if __name__ == "__main__":
+    main()
