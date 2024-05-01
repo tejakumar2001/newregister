@@ -1,30 +1,33 @@
 import streamlit as st
-from openai import OpenAI
+import openai
 
-with st.sidebar:
-    openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
-    "[Get an OpenAI API key](https://platform.openai.com/account/api-keys)"
-    "[View the source code](https://github.com/streamlit/llm-examples/blob/main/Chatbot.py)"
-    "[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/streamlit/llm-examples?quickstart=1)"
+# Set up your OpenAI API key
+openai.api_key = "YOUR_OPENAI_API_KEY"
 
-st.title("💬 Chatbot")
+def get_ai_response(question):
+    # Use OpenAI's GPT-3 model to generate a response to the question
+    response = openai.Completion.create(
+        engine="davinci",
+        prompt=question,
+        max_tokens=50
+    )
+    return response.choices[0].text.strip()
 
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
+def main():
+    st.title("Generative AI Q&A")
 
-for msg in st.session_state.messages:
-    st.chat_message(msg["role"]).write(msg["content"])
+    # User input for the question
+    question = st.text_input("Ask a question")
 
-if prompt := st.chat_input():
-    if not openai_api_key:
-        st.info("Please add your OpenAI API key to continue.")
-        st.stop()
+    # Generate response when the user submits the question
+    if st.button("Submit"):
+        if not question:
+            st.warning("Please enter a question.")
+        else:
+            response = get_ai_response(question)
+            st.write("AI Answer:", response)
 
-    client = OpenAI(api_key=openai_api_key)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    st.chat_message("user").write(prompt)
-    response = client.completion.create(model="text-davinci-003", prompt=prompt)
-    msg = response.choices[0].text.strip()
-    st.session_state.messages.append({"role": "assistant", "content": msg})
-    st.chat_message("assistant").write(msg)
+if __name__ == "__main__":
+    main()
+
 
