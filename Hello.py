@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 
 # Set up your OpenAI API key
-openai.api_key = "YOUR_OPENAI_API_KEY"
+openai.api_key = "sk-proj-ueC2uxz6gQWMlJ6VHQ1uT3BlbkFJtkfFcgMgRk5fjAbqeI91"
 
 def get_ai_response(question):
     # Use OpenAI's GPT-3 model to generate a response to the question
