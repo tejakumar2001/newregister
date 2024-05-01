@@ -1,33 +1,33 @@
+from openai import OpenAI
 import streamlit as st
-import openai
 
-# Set up your OpenAI API key
-openai.api_key = "sk-proj-ueC2uxz6gQWMlJ6VHQ1uT3BlbkFJtkfFcgMgRk5fjAbqeI91"
+st.title("ChatGPT-like clone")
 
-def get_ai_response(question):
-    # Use OpenAI's GPT-3 model to generate a response to the question
-    response = openai.Completion.create(
-        engine="davinci",
-        prompt=question,
-        max_tokens=50
-    )
-    return response.choices[0].text.strip()
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-def main():
-    st.title("Generative AI Q&A")
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
-    # User input for the question
-    question = st.text_input("Ask a question")
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    # Generate response when the user submits the question
-    if st.button("Submit"):
-        if not question:
-            st.warning("Please enter a question.")
-        else:
-            response = get_ai_response(question)
-            st.write("AI Answer:", response)
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-if __name__ == "__main__":
-    main()
+if prompt := st.chat_input("What is up?"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-
+    with st.chat_message("assistant"):
+        stream = client.chat.completions.create(
+            model=st.session_state["openai_model"],
+            messages=[
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ],
+            stream=True,
+        )
+        response = st.write_stream(stream)
+    st.session_state.messages.append({"role": "assistant", "content": response})
